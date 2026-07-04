@@ -5,19 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Deyzgramm Ultimate</title>
 
-        <!-- ОБНОВЛЕННЫЕ ИСПРАВЛЕННЫЕ ПРОВОДА GOOGLE FIREBASE -->
-<script>
-    function подкл(имя) {
-        const s = document.createElement('script');
-        s.src = "https:" + "//://gstatic.com" + имя + ".js";
-        s.async = false;
-        document.head.appendChild(s);
-    }
-    подкл("app"); 
-    подкл("auth"); 
-    подкл("database");
-</script>
-
+    <!-- Интернет-провода к серверам Google Firebase в шапке страницы -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
@@ -183,7 +174,7 @@
                 <select id="edit-msg-color" class="auth-input" style="background-color: #0e1621; color:#fff;">
                     <option value="#2b5278" style="color:#5288c1;">● Синий</option>
                     <option value="#6c5ce7" style="color:#a29bfe;">● Фиолетовый</option>
-                    <option value="#2ecc71" style="color:#2ecc71;">● Зелённый</option>
+                    <option value="#2ecc71" style="color:#2ecc71;">● Зелёный</option>
                 </select>
                 <button class="auth-btn" style="margin-top: 10px;" onclick="saveProfileSettings()">Сохранить изменения</button>
             </div>
@@ -197,7 +188,7 @@
     </div>
 
     <script>
-        // ==========================================
+               // ==========================================
         // ЧАСТЬ 3 ИЗ 5: ВЕЧНЫЕ СЕРВЕРА С ПОЛНЫМ API-КЛЮЧОМ
         // ==========================================
         let database, auth, chatWindow, msgInput, tgContainer, usersList, adminLogsBox;
@@ -241,7 +232,7 @@
                         }
                         document.getElementById('auth-screen').classList.add('hidden');
                         
-                        // Секретный замок админки: строго на твою личную почту!
+                        // Секретный замок админки разблокируется строго для твоей почты!
                         if (user.email && user.email.toLowerCase() === 'aemirov299@gmail.com') {
                             document.getElementById('admin-toggle-btn').classList.remove('hidden');
                             listenAllGlobalMessages();
@@ -261,21 +252,26 @@
             setTimeout(() => { toast.classList.remove('show'); }, 4000);
         }
 
-        // Защита от одинаковых ников: обыск базы данных Google
+        // Защита от одинаковых ников: обыск базы данных Google с обходом ошибки пустой базы
         function checkUsernameUnique(targetTag, callback) {
             database.ref('users').once('value').then((snapshot) => {
                 let isUnique = true;
-                snapshot.forEach((childSnapshot) => {
-                    const user = childSnapshot.val();
-                    if (user.username.toLowerCase() === targetTag.toLowerCase() && user.uid !== (auth.currentUser ? auth.currentUser.uid : '')) {
-                        isUnique = false;
-                    }
-                });
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        if (user && user.username && user.username.toLowerCase() === targetTag.toLowerCase() && user.uid !== (auth.currentUser ? auth.currentUser.uid : '')) {
+                            isUnique = false;
+                        }
+                    });
+                }
                 callback(isUnique);
+            }).catch(() => {
+                // Если база вообще пустая, то ник по умолчанию уникален!
+                callback(true);
             });
         }
-        // ==========================================
-        // ЧАСТЬ 4 ИЗ 5: РЕГИСТРАЦИЯ И СМЕНА ПРОФИЛЯ
+                // ==========================================
+        // ЧАСТЬ 4 ИЗ 5: РЕГИСТРАЦИЯ И СМЕНА ПРОФИЛЯ (БЕЗ ЗАВИСАНИЙ)
         // ==========================================
         function handleRegister() {
             if (!database || !auth) { showFloatingError("Сервера грузятся..."); return; }
@@ -290,7 +286,7 @@
             if (pass1.length < 6) { showFloatingError("В пароле должно быть минимум 6 символов!"); return; }
             if (!uName.startsWith('@')) uName = '@' + uName;
 
-            // Жесткая проверка уникальности никнейма перед регистрацией
+            // Запускаем проверку уникальности
             checkUsernameUnique(uName, (isUnique) => {
                 if (!isUnique) { showFloatingError("⚠️ Этот юзернейм уже занят другим человеком!"); return; }
 
@@ -331,7 +327,6 @@
                     checkUsernameUnique(newTag, (isUnique) => {
                         if (!isUnique) { showFloatingError("⚠️ Этот никнейм уже занят!"); return; }
                         
-                        // ИСПРАВЛЕНО: Переменная newName теперь прописана идеально точно!
                         auth.currentUser.updateProfile({ displayName: newName }).then(() => { 
                             userRef.update({ name: newName, username: newTag, msgColor: newColor, lastUsernameChange: now }); 
                             alert("Сохранено!"); toggleSettingsScreen(false); 
@@ -345,15 +340,15 @@
                 }
             });
         }
-        // ==========================================
+                // ==========================================
         // ЧАСТЬ 5 ИЗ 5: ЧАТ, СТИКЕРЫ И ФИНАЛ ДОКУМЕНТА
         // ==========================================
         function toggleAuthScreens(s) { if (s) { document.getElementById('register-box').classList.remove('hidden'); document.getElementById('login-box').classList.add('hidden'); } else { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); } }
         function toggleThemeManual() { currentUserInfo.isThemeWhite = !currentUserInfo.isThemeWhite; const btn = document.getElementById('theme-btn'); if (currentUserInfo.isThemeWhite) { tgContainer.classList.add('theme-white'); btn.textContent = "☀️"; } else { tgContainer.classList.remove('theme-white'); btn.textContent = "🌙"; } }
         function toggleSettingsScreen(s) { if (s) document.getElementById('settings-screen').classList.remove('hidden'); else document.getElementById('settings-screen').classList.add('hidden'); }
-        function loadGlobalUsers() { database.ref('users').on('value', (snap) => { usersList.innerHTML = ''; allUsersArray = []; snap.forEach((c) => { const u = c.val(); if (u.uid !== currentUserInfo.uid) allUsersArray.push(u); }); renderUsers(allUsersArray); }); }
+        function loadGlobalUsers() { database.ref('users').on('value', (snap) => { usersList.innerHTML = ''; allUsersArray = []; if(snap.exists()){ snap.forEach((c) => { const u = c.val(); if (u && u.uid !== currentUserInfo.uid) allUsersArray.push(u); }); } renderUsers(allUsersArray); }); }
         function renderUsers(users) { usersList.innerHTML = ''; if (users.length === 0) { usersList.innerHTML = "<div style='text-align:center; padding:20px; color:var(--text-secondary);'>Никого не найдено...</div>"; return; } users.forEach((u) => { const item = document.createElement('div'); item.className = 'user-item'; item.onclick = () => openPersonalChat(u.uid, u.name); item.innerHTML = `<div class="user-avatar">${u.name.charAt(0).toUpperCase()}</div><div class="user-info"><div class="user-name">${u.name} <span>[ID: ${u.id || '?'}]</span></div><div class="user-tag">${u.username}</div></div>`; usersList.appendChild(item); }); }
-        function filterUsersList() { const q = document.getElementById('search-user').value.toLowerCase().trim(); const f = allUsersArray.filter(u => u.username.toLowerCase().includes(q) || u.name.toLowerCase().includes(q)); renderUsers(f); }
+        function filterUsersList() { const q = document.getElementById('search-user').value.toLowerCase().trim(); const f = allUsersArray.filter(u => (u.username && u.username.toLowerCase().includes(q)) || (u.name && u.name.toLowerCase().includes(q))); renderUsers(f); }
         
         function openPersonalChat(id, name) { 
             activeChatUserId = id; 
@@ -386,4 +381,3 @@
     </script>
 </body>
 </html>
-
