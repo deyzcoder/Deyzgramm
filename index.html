@@ -140,19 +140,20 @@
         </div>
                                                                                                            </div>
         <script>
-        let config = {
-            apiKey: "AIzaSyDKEaKNdXQ4lX5PTjf-VHsuFNroC5Xa4u4",
-            authDomain: "://firebaseapp.com",
-            databaseURL: "https://firebaseio.com",
-            projectId: "deyzgramm",
-            storageBucket: "deyzgramm.firebasestorage.app",
-            messagingSenderId: "441290598892",
-            appId: "1:441290598892:web:1933d9e63f48270a78b8c9"
-        };
-        
-        firebase.initializeApp(config);
-        let auth = firebase.auth();
-        let database = firebase.database();
+            let config = {
+        apiKey: "AIzaSyDKEaKNdXQ4lX5PTjf-VHsuFNroC5Xa4u4",
+        authDomain: "://firebaseapp.com",
+        databaseURL: "https://firebaseio.com",
+        projectId: "deyzgramm",
+        storageBucket: "deyzgramm.firebasestorage.app",
+        messagingSenderId: "441290598892",
+        appId: "1:441290598892:web:1933d9e63f48270a78b8c9"
+    };
+    
+    firebase.initializeApp(config);
+    let auth = firebase.auth();
+    let database = firebase.database();
+            
 
         let currentUserInfo = { uid: null, name: '', username: '', msgColor: '#9b59b6' };
         let activeChatUserId = null, allUsersArray = [];
