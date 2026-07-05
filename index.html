@@ -11,13 +11,20 @@
         const s = document.createElement('script');
         s.src = "https:" + "//://gstatic.com" + имя + ".js";
         s.async = false;
+        // ЛОВУШКА ОШИБОК: Если файл не скачается, выскочит alert
+        s.onerror = function() {
+            alert("🚨 Ошибка загрузки файла Firebase: " + имя);
+        };
         document.head.appendChild(s);
     }
-    подкл("app"); 
-    подкл("auth"); 
-    подкл("database");
+    try {
+        подкл("app"); 
+        подкл("auth"); 
+        подкл("database");
+    } catch(err) {
+        alert("🚨 Сбой скрипта: " + err.message);
+    }
     </script>
-    
     
 <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
