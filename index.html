@@ -265,7 +265,7 @@
             if (!uName.startsWith('@')) uName = '@' + uName;
             
             checkUsernameUnique(uName, (isUnique) => {
-                isUnique = true;
+            
                 
                 if (!isUnique) { showFloatingError("⚠️ Этот юзернейм уже занят!"); return; }
                 auth.createUserWithEmailAndPassword(email, pass1).then((u) => {
