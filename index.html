@@ -7,32 +7,24 @@
 
     <!-- Интернет-провода к серверам Google Firebase в шапке страницы -->
     <script>
-    function подкл(имя) {
+    function подкл(имя, callback) {
         const s = document.createElement('script');
         s.src = "https://cloudflare.com" + имя + ".min.js";
         s.async = false;
-        s.onerror = function() {
-            alert("🚨 Ошибка загрузки файла Firebase: " + имя);
-        };
+        if (callback) s.onload = callback;
         document.head.appendChild(s);
     }
-        
-    
-        
-        // ЛОВУШКА ОШИБОК: Если файл не скачается, выскочит alert
-        s.onerror = function() {
-            alert("🚨 Ошибка загрузки файла Firebase: " + имя);
-        };
-        document.head.appendChild(s);
-    }
-    try {
-        подкл("app"); 
-        подкл("auth"); 
-        подкл("database");
-    } catch(err) {
-        alert("🚨 Сбой скрипта: " + err.message);
-    }
+    // Скачиваем файлы строго по очереди: сначала ядро, потом авторизацию, потом базу!
+    подкл("app", function() {
+        подкл("auth", function() {
+            подкл("database", function() {
+                // Как только долетела база — мгновенно включаем мессенджер!
+                if (typeof initFirebaseApp === "function") initFirebaseApp();
+            });
+        });
+    });
     </script>
+    
     
 <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
