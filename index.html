@@ -9,8 +9,16 @@
     <script>
     function подкл(имя) {
         const s = document.createElement('script');
-        s.src = "https:" + "//://gstatic.com" + имя + ".js";
+        s.src = "https://cloudflare.com" + имя + ".min.js";
         s.async = false;
+        s.onerror = function() {
+            alert("🚨 Ошибка загрузки файла Firebase: " + имя);
+        };
+        document.head.appendChild(s);
+    }
+        
+    
+        
         // ЛОВУШКА ОШИБОК: Если файл не скачается, выскочит alert
         s.onerror = function() {
             alert("🚨 Ошибка загрузки файла Firebase: " + имя);
