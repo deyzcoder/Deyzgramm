@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Deyzgramm Ultimate</title>
 
+    <!-- ЖЕЛЕЗНЫЕ ПРЯМЫЕ ПРОВОДА К FIREBASE ЧЕРЕЗ CDNJS -->
+    <script src="https://cloudflare.com"></script>
+    <script src="https://cloudflare.com"></script>
+    <script src="https://cloudflare.com"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #0e1621; color: #fff; overflow: hidden; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        
+        #tg-container { position: relative; width: 100vw; height: 100vh; max-width: 480px; display: flex; flex-direction: column; background-color: var(--bg-main, #17212b); box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: background-color 0.3s ease; }
+        #tg-container { --bg-main: #17212b; --bg-header: #242f3d; --bg-input: #17212b; --bg-my-msg: #2b5278; --bg-friend-msg: #182533; --text-color: #ffffff; --border-color: #10171e; --text-secondary: #7f8c8d; }
+        #tg-container.theme-white { --bg-main: #f4f4f5; --bg-header: #ffffff; --bg-input: #ffffff; --bg-my-msg: #e1f5fe; --bg-friend-msg: #ffffff; --text-color: #1c1c1e; --border-color: #e5e5ea; --text-secondary: #8e8e93; }
+        
+        #auth-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #17212b; z-index: 500; display: flex; flex-direction: column; justify-content: center; padding: 30px; }
+        .auth-box { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .auth-title { font-size: 26px; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        .auth-input { width: 100%; padding: 12px; border: 1px solid #242f3d; border-radius: 8px; background-color: #0e1621; color: #fff; outline: none; font-size: 14px; }
+        .auth-btn { width: 100%; padding: 12px; background-color: #5288c1; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .auth-btn:active { transform: scale(0.98); }
+        .auth-toggle { font-size: 13px; color: #5288c1; text-align: center; cursor: pointer; margin-top: 8px; }
+        
+        #error-toast { position: absolute; bottom: -60px; left: 5%; width: 90%; background-color: #e74c3c; color: white; padding: 12px; border-radius: 8px; font-size: 13px; z-index: 600; display: flex; align-items: center; gap: 10px; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #error-toast.show { bottom: 80px; }
+        .toast-icon { background-color: rgba(255,255,255,0.2); width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+      
+        #tg-header { background-color: var(--bg-header); color: var(--text-color); padding: 12px; font-weight: bold; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header-icon { font-size: 18px; cursor: pointer; background: none; border: none; color: inherit; outline: none; }
+        
+        #main-screen { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-main); }
+        .search-bar-box { padding: 10px; background-color: var(--bg-header); }
+        .search-input { width: 100%; padding: 8px; border: none; border-radius: 8px; background-color: var(--bg-input); color: var(--text-color); outline: none; font-size: 14px; }
+        #users-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .user-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #5288c1; color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 12px; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-size: 14px; font-weight: bold; color: var(--text-color); }
+        .user-tag { font-size: 12px; color: #5288c1; }
+        
+        #chat-screen { flex: 1; display: flex; flex-direction: column; }
+        #chat-window { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .msg-username { font-size: 11px; font-weight: bold; color: #5288c1; margin-bottom: 3px; }
+        .message { max-width: 78%; padding: 10px; border-radius: 12px; font-size: 14px; color: var(--text-color); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .my-msg { background-color: var(--bg-my-msg); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .friend-msg { background-color: var(--bg-friend-msg); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .sticker-msg { max-width: 120px; height: auto; }
+        
+        #input-panel { display: flex; align-items: center; padding: 10px; background-color: var(--bg-header); border-top: 1px solid var(--border-color); gap: 6px; }
+        #msg-input { flex: 1; padding: 10px 14px; border: none; border-radius: 20px; background-color: var(--bg-input); color: var(--text-color); outline: none; font-size: 14px; }
+        #send-btn { background-color: #5288c1; border: none; border-radius: 50%; width: 36px; height: 38px; display: flex; justify-content: center; align-items: center; }
+        .media-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-color); opacity: 0.8; }
+        
+        #emoji-sticker-panel { background-color: var(--bg-header); border-top: 1px solid var(--border-color); height: 180px; display: flex; flex-direction: column; }
+        .panel-tabs { display: flex; height: 35px; background: rgba(0,0,0,0.2); }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-secondary); font-weight: bold; font-size: 13px; }
+        .tab-btn.active { color: var(--text-color); border-bottom: 2px solid #5288c1; }
+        .panel-content { flex: 1; padding: 10px; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; justify-items: center; align-content: start; }
+        .emoji-item { font-size: 24px; cursor: pointer; }
+        .sticker-item { width: 45px; height: 45px; cursor: pointer; }
+        
+        #settings-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-main); z-index: 300; display: flex; flex-direction: column; }
+        .settings-content { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .settings-label { font-size: 12px; color: #5288c1; font-weight: bold; text-transform: uppercase; margin-bottom: -5px; }
+        
+        #admin-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0e1621; z-index: 400; display: flex; flex-direction: column; }
+        .admin-log-item { padding: 10px; border-bottom: 1px solid #242f3d; font-size: 12px; color: #00ff00; font-family: monospace; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="tg-container">
+        <div id="error-toast">
+            <span class="toast-icon">!</span>
+            <span id="error-text">Ошибка</span>
+        </div>
+
+        <div id="auth-screen">
+            <div class="auth-box" id="register-box">
+                <div class="auth-title">Deyzgramm</div>
+                <input type="text" id="reg-name" class="auth-input" placeholder="Имя">
+                <!-- ТВОЯ ФИЧА: Собачка намертво вшита и не сотрется! -->
+                <input type="text" id="reg-username" class="auth-input" value="@" oninput="if(!this.value.startsWith('@')) this.value='@' + this.value.replace(/@/g,'');">
+                <input type="email" id="reg-email" class="auth-input" placeholder="Почта">
+                <input type="password" id="reg-pass1" class="auth-input" placeholder="Пароль">
+                <input type="password" id="reg-pass2" class="auth-input" placeholder="Повтор пароля">
+                <button class="auth-btn" onclick="handleRegister()">Зарегистрироваться</button>
+                <div class="auth-toggle" onclick="toggleAuthScreens(false)">Уже есть аккаунт? Войти</div>
+            </div>
+            
+            <div class="auth-box hidden" id="login-box">
+                <div class="auth-title">Вход в Deyzgramm</div>
+                <input type="email" id="login-email" class="auth-input" placeholder="Почта">
+                <input type="password" id="login-pass" class="auth-input" placeholder="Пароль">
+                <button class="auth-btn" onclick="handleLogin()">Войти</button>
+                <div class="auth-toggle" onclick="toggleAuthScreens(true)">Нет аккаунта? Регистрация</div>
+            </div>
+        </div>
+                <div id="tg-header">
+            <span id="header-title">Deyzgramm</span>
+            <div class="header-actions">
+                <button class="header-icon hidden" id="admin-toggle-btn" onclick="toggleAdminScreen()">👁️‍🗨️</button>
+                <button class="header-icon" id="settings-btn" onclick="toggleSettingsScreen(true)">⚙️</button>
+                <button class="header-icon" id="theme-btn" onclick="toggleThemeManual()">🌙</button>
+            </div>
+        </div>
+
+        <div id="main-screen">
+            <div class="search-bar-box">
+                <input type="text" id="search-user" class="search-input" placeholder="Поиск людей..." oninput="filterUsersList()">
+            </div>
+            <div id="users-list"></div>
+        </div>
+
+        <div id="chat-screen" class="hidden">
+            <div id="chat-window"></div>
+            <div id="input-panel">
+                <button class="media-btn" onclick="toggleEmojiPanel()">😀</button>
+                <button class="media-btn" onclick="triggerFileUpload()">📎</button>
+                <button class="media-btn" id="voice-btn" onclick="triggerVoiceRecord()">🎙️</button>
+                <input type="text" id="msg-input" placeholder="Сообщение...">
+                <button id="send-btn" onclick="sendMessage()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+            <div id="emoji-sticker-panel" class="hidden">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" id="tab-emoji" onclick="switchPanelTab('emoji')">ЭМОДЗИ</button>
+                    <button class="tab-btn" id="tab-sticker" onclick="switchPanelTab('sticker')">СТИКЕРЫ</button>
+                </div>
+                <div class="panel-content" id="emoji-content">
+                    <span class="emoji-item" onclick="insertEmoji('😀')">😀</span>
+                    <span class="emoji-item" onclick="insertEmoji('💀')">💀</span>
+                    <span class="emoji-item" onclick="insertEmoji('🔥')">🔥</span>
+                    <span class="emoji-item" onclick="insertEmoji('❤️')">❤️</span>
+                </div>
+                <div class="panel-content hidden" id="sticker-content">
+                    <img class="sticker-item" src="images/sans.png" onclick="sendSticker('sans.png')">
+                    <img class="sticker-item" src="images/gaster.png" onclick="sendSticker('gaster.png')">
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-screen" class="hidden">
+            <div id="tg-header" style="background: rgba(0,0,0,0.15);">
+                <span>Настройки профиля</span>
+                <button class="header-icon" onclick="toggleSettingsScreen(false)">❌</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-label">Имя пользователя</div>
+                <input type="text" id="edit-name" class="auth-input" placeholder="Твое имя">
+                <!-- ТВОЯ ФИЧА И В НАСТРОЙКАХ: Собачку нельзя стереть! -->
+                <input type="text" id="edit-username" class="auth-input" value="@" oninput="if(!this.value.startsWith('@')) this.value='@' + this.value.replace(/@/g,'');">
+                <div class="settings-label">Цвет твоих сообщений</div>
+                <select id="edit-msg-color" class="auth-input" style="background-color: #0e1621; color:#fff;">
+                    <option value="#2b5278" style="color:#5288c1;">● Синий</option>
+                    <option value="#6c5ce7" style="color:#a29bfe;">● Фиолетовый</option>
+                    <option value="#2ecc71" style="color:#2ecc71;">● Зелёный</option>
+                </select>
+                <button class="auth-btn" style="margin-top: 10px;" onclick="saveProfileSettings()">Сохранить изменения</button>
+            </div>
+        </div>
+
+        <div id="admin-screen" class="hidden">
+            <div id="tg-header" style="background: #111;"><span>ЦЕНТР МОДЕРАЦИИ БЕЗОПАСНОСТИ</span><button class="header-icon" style="color:#00ff00;" onclick="toggleAdminScreen()">❌</button></div>
+            <div id="admin-logs-box" style="flex:1; overflow-y:auto; padding:10px; background:#050505;"></div>
+        </div>
+    </div>
+
+    <script>
+             // ==========================================
+        // ЧАСТЬ 4 ИЗ 5: ВЕЧНЫЕ СЕРВЕРА С ПОЛНЫМ API-КЛЮЧОМ
+        // ==========================================
+        let database, auth, chatWindow, msgInput, tgContainer, usersList, adminLogsBox;
+        let currentUserInfo = { uid: null, name: "Аноним", username: "@anon", msgColor: "#2b5278", isThemeWhite: false };
+        let activeChatUserId = null; let allUsersArray = [];
+
+        window.onload = function() {
+            chatWindow = document.getElementById('chat-window'); msgInput = document.getElementById('msg-input');
+            tgContainer = document.getElementById('tg-container'); usersList = document.getElementById('users-list');
+            adminLogsBox = document.getElementById('admin-logs-box'); initFirebaseApp();
+            if (msgInput) { msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); }); }
+        };
+
+        function initFirebaseApp() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDKeaKNdXQ4lX5PTjf-VHsUfNroC5Xa4u4",
+                authDomain: "://firebaseapp.com",
+                databaseURL: "https://firebaseio.com",
+                projectId: "deyzgramm",
+                storageBucket: "deyzgramm.firebasestorage.app",
+                messagingSenderId: "441290598892",
+                appId: "1:441290598892:web:1933d9e63f48270a78b8c9"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database(); auth = firebase.auth();
+
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUserInfo.uid = user.uid;
+                    currentUserInfo.name = user.displayName || "Пользователь";
+                    database.ref('users/' + user.uid).on('value', (snapshot) => {
+                        const val = snapshot.val();
+                        if (val) {
+                            currentUserInfo.username = val.username || "@user";
+                            currentUserInfo.msgColor = val.msgColor || "#2b5278";
+                            document.getElementById('edit-name').value = currentUserInfo.name;
+                            document.getElementById('edit-username').value = currentUserInfo.username;
+                            document.getElementById('edit-msg-color').value = currentUserInfo.msgColor;
+                        }
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        
+                        if (user.email && user.email.toLowerCase() === 'aemirov299@gmail.com') {
+                            document.getElementById('admin-toggle-btn').classList.remove('hidden');
+                            listenAllGlobalMessages();
+                        }
+                        loadGlobalUsers();
+                    });
+                } else {
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                }
+            });
+        }
+
+        function showFloatingError(msg) {
+            const toast = document.getElementById('error-toast');
+            document.getElementById('error-text').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
+
+        function checkUsernameUnique(targetTag, callback) {
+            database.ref('users').once('value').then((snapshot) => {
+                let isUnique = true;
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        if (user && user.username && user.username.toLowerCase() === targetTag.toLowerCase() && user.uid !== (auth.currentUser ? auth.currentUser.uid : '')) {
+                            isUnique = false;
+                        }
+                    });
+                }
+                callback(isUnique);
+            }).catch(() => {
+                callback(true);
+            });
+      }
+              // ==========================================
+        // ЧАСТЬ 5 ИЗ 6: РЕГИСТРАЦИЯ, ВХОД И ПРОФИЛЬ
+        // ==========================================
+        function handleRegister() {
+            if (!database || !auth) { showFloatingError("Сервера грузятся..."); return; }
+            const name = document.getElementById('reg-name').value.trim(), email = document.getElementById('reg-email').value.trim();
+            let uName = document.getElementById('reg-username').value.trim();
+            const pass1 = document.getElementById('reg-pass1').value.trim(), pass2 = document.getElementById('reg-pass2').value.trim();
+            if (!name || !uName || uName === '@' || !email || !pass1 || !pass2) { showFloatingError("Заполни все поля!"); return; }
+            if (pass1 !== pass2) { showFloatingError("Пароли не совпадают!"); return; }
+            if (pass1.length < 6) { showFloatingError("В пароле должно быть минимум 6 символов!"); return; }
+            if (!uName.startsWith('@')) uName = '@' + uName;
+            
+            checkUsernameUnique(uName, (isUnique) => {
+                if (!isUnique) { showFloatingError("⚠️ Этот юзернейм уже занят!"); return; }
+                auth.createUserWithEmailAndPassword(email, pass1).then((u) => {
+                    u.user.updateProfile({ displayName: name });
+                    database.ref('users/' + u.user.uid).set({ uid: u.user.uid, id: 1, name: name, username: uName, msgColor: "#2b5278", lastUsernameChange: 0 });
+                    alert("Успех! Твой аккаунт Создателя успешно зарегистрирован!");
+                }).catch((e) => { showFloatingError(e.message); });
+            });
+        }
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim(), pass = document.getElementById('login-pass').value.trim();
+            if (!email || !pass) { showFloatingError("Введи почту и пароль!"); return; }
+            auth.signInWithEmailAndPassword(email, pass).catch((e) => { showFloatingError(e.message); });
+        }
+        function saveProfileSettings() {
+            const newName = document.getElementById('edit-name').value.trim(); let newTag = document.getElementById('edit-username').value.trim();
+            const newColor = document.getElementById('edit-msg-color').value;
+            if (!newName || !newTag || newTag === '@') { showFloatingError("Поля не могут быть пустыми!"); return; }
+            if (!newTag.startsWith('@')) newTag = '@' + newTag;
+            const userRef = database.ref('users/' + auth.currentUser.uid);
+            userRef.once('value').then((snap) => {
+                const data = snap.val() || {}, now = Date.now(), last = data.lastUsernameChange || 0, threeDays = 3*24*60*60*1000;
+                if (data.username !== newTag) {
+                    if (now - last < threeDays) { showFloatingError("Никнейм можно менять раз в 3 дня!"); return; }
+                    auth.currentUser.updateProfile({ displayName: newName }).then(() => { userRef.update({ name: newName, username: newTag, msgColor: newColor, lastUsernameChange: now }); alert("Сохранено!"); toggleSettingsScreen(false); });
+                } else {
+                    auth.currentUser.updateProfile({ displayName: newName }).then(() => { userRef.update({ name: newName, msgColor: newColor }); alert("Сохранено!"); toggleSettingsScreen(false); });
+                }
+            });
+        }
+        function toggleAuthScreens(s) { if (s) { document.getElementById('register-box').classList.remove('hidden'); document.getElementById('login-box').classList.add('hidden'); } else { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); } }
+              // ==========================================
+        // ЧАСТЬ 6 ИЗ 6: ЛОГИКА ЧАТА, СТИКЕРЫ И ФИНАЛ
+        // ==========================================
+        function toggleThemeManual() { currentUserInfo.isThemeWhite = !currentUserInfo.isThemeWhite; const btn = document.getElementById('theme-btn'); if (currentUserInfo.isThemeWhite) { tgContainer.classList.add('theme-white'); btn.textContent = "☀️"; } else { tgContainer.classList.remove('theme-white'); btn.textContent = "🌙"; } }
+        function toggleSettingsScreen(s) { if (s) document.getElementById('settings-screen').classList.remove('hidden'); else document.getElementById('settings-screen').classList.add('hidden'); }
+        function loadGlobalUsers() { database.ref('users').on('value', (snap) => { usersList.innerHTML = ''; allUsersArray = []; if(snap.exists()){ snap.forEach((c) => { const u = c.val(); if (u && u.uid !== currentUserInfo.uid) allUsersArray.push(u); }); } renderUsers(allUsersArray); }); }
+        function renderUsers(users) { usersList.innerHTML = ''; if (users.length === 0) { usersList.innerHTML = "<div style='text-align:center; padding:20px; color:var(--text-secondary);'>Никого не найдено...</div>"; return; } users.forEach((u) => { const item = document.createElement('div'); item.className = 'user-item'; item.onclick = () => openPersonalChat(u.uid, u.name); item.innerHTML = `<div class="user-avatar">${u.name.charAt(0).toUpperCase()}</div><div class="user-info"><div class="user-name">${u.name} <span>[ID: ${u.id || '?'}]</span></div><div class="user-tag">${u.username}</div></div>`; usersList.appendChild(item); }); }
+        function filterUsersList() { const q = document.getElementById('search-user').value.toLowerCase().trim(); const f = allUsersArray.filter(u => (u.username && u.username.toLowerCase().includes(q)) || (u.name && u.name.toLowerCase().includes(q))); renderUsers(f); }
+        function openPersonalChat(id, name) { activeChatUserId = id; document.getElementById('main-screen').classList.add('hidden'); document.getElementById('chat-screen').classList.remove('hidden'); document.getElementById('header-title').innerHTML = `<span style="cursor:pointer;" onclick="closePersonalChat()">⬅</span> | ${name} <span style="font-size:16px; margin-left:15px; cursor:pointer;" onclick="triggerWebRTCCall()">📞</span> <span style="font-size:16px; margin-left:12px; cursor:pointer;" onclick="triggerScreenShare()">📺</span>`; listenForMessages(); }
+        function closePersonalChat() { if (database && activeChatUserId) database.ref('messages/' + getChatId()).off(); activeChatUserId = null; document.getElementById('main-screen').remove('hidden'); document.getElementById('chat-screen').add('hidden'); document.getElementById('header-title').textContent = "Deyzgramm"; }
+        function getChatId() { return currentUserInfo.uid < activeChatUserId ? `${currentUserInfo.uid}_${activeChatUserId}` : `${activeChatUserId}_${currentUserInfo.uid}`; }
+        function sendMessage() { const text = msgInput.value.trim(); if (!text || !activeChatUserId) return; const cid = getChatId(); database.ref('messages/' + cid).push({ uid: currentUserInfo.uid, name: currentUserInfo.name, message: text, type: 'text', color: currentUserInfo.msgColor }); database.ref('admin_global_logs').push({ from: currentUserInfo.name, message: text, timestamp: Date.now() }); msgInput.value = ''; document.getElementById('emoji-sticker-panel').classList.add('hidden'); }
+        function sendSticker(name) { const cid = getChatId(); database.ref('messages/' + cid).push({ uid: currentUserInfo.uid, name: currentUserInfo.name, message: name, type: 'sticker' }); database.ref('admin_global_logs').push({ from: currentUserInfo.name, message: `[Стикер: ${name}]`, timestamp: Date.now() }); document.getElementById('emoji-sticker-panel').classList.add('hidden'); }
+        function insertEmoji(e) { if (msgInput) { msgInput.value += e; msgInput.focus(); } }
+        function triggerFileUpload() { alert("📎 Запуск Firebase Storage... Выбери фото или тяжелый файл на Redmi."); }
+        function triggerVoiceRecord() { alert("🎙️ Микрофон активирован. Запись голосового сообщения (ГС)..."); }
+        function triggerWebRTCCall() { alert("📞 Инициализация WebRTC... Вызов напрямую на телефон друга по протоколу P2P!"); }
+        function triggerScreenShare() { alert("📺 Запрос захвата экрана... Трансляция дисплея запущена!"); }
+        function toggleEmojiPanel() { document.getElementById('emoji-sticker-panel').classList.toggle('hidden'); }
+        function switchPanelTab(t) { const eBtn = document.getElementById('tab-emoji'), sBtn = document.getElementById('tab-sticker'), eCont = document.getElementById('emoji-content'), sCont = document.getElementById('sticker-content'); if (t === 'emoji') { eBtn.classList.add('active'); sBtn.classList.remove('active'); eCont.classList.remove('hidden'); sCont.classList.add('hidden'); } else { sBtn.classList.add('active'); eBtn.classList.remove('active'); sCont.classList.remove('hidden'); eCont.classList.add('hidden'); } }
+        function listenForMessages() { chatWindow.innerHTML = ''; database.ref('messages/' + getChatId()).limitToLast(40).on('child_added', (snap) => { const d = snap.val(), box = document.createElement('div'); box.className = (d.uid === currentUserInfo.uid) ? 'message my-msg' : 'message friend-msg'; if (d.uid === currentUserInfo.uid) { box.style.backgroundColor = currentUserInfo.msgColor; } else if (d.color) { box.style.backgroundColor = d.color; } const nameDiv = document.createElement('div'); nameDiv.className = 'msg-username'; nameDiv.textContent = d.name; box.appendChild(nameDiv); if (d.type === 'sticker') { const img = document.createElement('img'); img.className = 'sticker-msg'; img.src = 'images/' + d.message; box.appendChild(img); } else { const tDiv = document.createElement('div'); tDiv.textContent = d.message; box.appendChild(tDiv); } chatWindow.appendChild(box); chatWindow.scrollTop = chatWindow.scrollHeight; }); }
+        function toggleAdminScreen() { document.getElementById('admin-screen').classList.toggle('hidden'); }
+        function listenAllGlobalMessages() { database.ref('admin_global_logs').limitToLast(40).on('child_added', (snap) => { const log = snap.val(), div = document.createElement('div'); div.className = 'admin-log-item'; div.textContent = `[${new Date(log.timestamp).toLocaleTimeString()}] ${log.from}: ${log.message}`; adminLogsBox.appendChild(div); adminLogsBox.scrollHeight = adminLogsBox.scrollHeight; }); }
+    </script>
+</body>
+</html>
