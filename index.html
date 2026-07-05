@@ -6,9 +6,8 @@
     <title>Deyzgramm Ultimate</title>
 
     <!-- ЖЕЛЕЗНЫЕ ПРЯМЫЕ ПРОВОДА К FIREBASE ЧЕРЕЗ CDNJS -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
+    <script src="https://clck.ru"></script>
+
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
@@ -256,7 +255,7 @@
         // ЧАСТЬ 5 ИЗ 6: РЕГИСТРАЦИЯ, ВХОД И ПРОФИЛЬ
         // ==========================================
         function handleRegister() {
-            if (!database || !auth) { showFloatingError("Сервера грузятся..."); return; }
+            
             const name = document.getElementById('reg-name').value.trim(), email = document.getElementById('reg-email').value.trim();
             let uName = document.getElementById('reg-username').value.trim();
             const pass1 = document.getElementById('reg-pass1').value.trim(), pass2 = document.getElementById('reg-pass2').value.trim();
