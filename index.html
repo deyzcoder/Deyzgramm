@@ -151,8 +151,8 @@
         };
         
         firebase.initializeApp(config);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        let auth = firebase.auth();
+        let database = firebase.database();
 
         let currentUserInfo = { uid: null, name: '', username: '', msgColor: '#9b59b6' };
         let activeChatUserId = null, allUsersArray = [];
