@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Orbit</title>
-    <!-- Чистые скрипты Firebase v10 Compat без опечаток -->
+    <!-- Официальные современные скрипты Firebase v10 Compat -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
-    <style>
-        /* Глубокий, тёмный космический фон, как ты просил */
+        <style>
+        /* Глубокий, тёмный космический фон */
         body {
             background: #040406;
             color: #fff;
@@ -29,20 +29,21 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* Контейнер окошка */
+        /* Контейнер окошка с ЖЁСТКИМИ НОЖНИЦАМИ */
         .neon-box {
             position: relative;
             background: #0b0b12;
             border-radius: 15px;
-            padding: 2px; /* Отступ для тонкой линии */
+            padding: 2px; /* Толщина тонкой рамки */
             width: 90%;
             max-width: 400px;
             box-sizing: border-box;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            animation: fadeInScale 0.6s overflow: hidden;(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            overflow: hidden; /* СРЕЗАЕТ ВСЕ РОМБЫ НАМЕРТВО! */
         }
 
-        /* Эффект ТОНКОЙ неоновой линии, бегающей по контуру */
+        /* Эффект лазерной тонкой неоновой линии по контуру */
         .neon-box::before {
             content: '';
             position: absolute;
@@ -58,7 +59,7 @@
         /* Внутренний темный слой окошка */
         .neon-box-inner {
             position: relative;
-            background: #0b0b12; /* Чуть потемнее */
+            background: #0b0b12;
             border-radius: 13px;
             padding: 30px;
             z-index: 2;
@@ -72,12 +73,14 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Строгие тёмные инпуты из Дейзграмма */
+        /* Красивые тёмные инпуты */
         .neon-input-wrapper {
             position: relative;
             margin-bottom: 16px;
             text-align: left;
         }
+
+        /* БОМБОВАЯ ФИШКА: Плавный ввод текста со сдвигом вправо */
         .neon-input {
             width: 100%;
             padding: 14px;
@@ -89,10 +92,14 @@
             outline: none;
             font-size: 15px;
             transition: 0.3s;
+            /* Настройки шрифта для красивой анимации символов */
+            letter-spacing: 0.5px;
+            font-variant-numeric: tabular-nums;
         }
         .neon-input:focus {
             border-color: #9b59b6;
-            box-shadow: 0 0 10px rgba(155, 89, 182, 0.2);
+            box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+            letter-spacing: 1.5px; /* Буквы плавно раздвигаются вправо при фокусе! */
         }
 
         /* Неудаляемая статичная собачка @ */
@@ -110,7 +117,7 @@
             user-select: none;
         }
 
-        /* Фиолетовая кнопка БЕЗ ТУПЫХ РАКЕТ */
+        /* Пружинящая фиолетовая кнопка БЕЗ ТУПЫХ РАКЕТ */
         .neon-btn {
             width: 100%;
             padding: 15px;
@@ -123,11 +130,16 @@
             letter-spacing: 1px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
-            transition: 0.3s;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Пружинный эффект! */
             margin-top: 5px;
+            transform: scale(1);
         }
-        .neon-btn:active {
-            transform: scale(0.98);
+        
+        /* Плавное увеличение кнопки на 3% при наведении или тапе */
+        .neon-btn:hover, .neon-btn:active {
+            transform: scale(1.03);
+            background: #9b59b6;
+            box-shadow: 0 0 20px #9b59b6;
         }
 
         .switch-link {
@@ -141,6 +153,12 @@
         .switch-link:hover {
             color: #9b59b6;
         }
+        
+        /* Фикс автозаполнения Android */
+        .neon-input:-webkit-autofill {
+            -webkit-text-fill-color: #fff !important;
+            -webkit-box-shadow: 0 0 0 30px #0e0e16 inset !important;
+        }
     </style>
 </head>
 <body>
@@ -150,7 +168,7 @@
         <div class="neon-box-inner">
             <h2 id="form-title" style="color: #9b59b6; text-shadow: 0 0 10px #9b59b6; margin-top: 0; margin-bottom: 25px;">Neon Orbit</h2>
             
-            <!-- Имя -->
+            <!-- Поле Имени -->
             <div class="neon-input-wrapper" id="name-wrapper">
                 <input type="text" id="reg-name" class="neon-input" placeholder="Твоё имя">
             </div>
@@ -161,7 +179,7 @@
                 <input type="text" id="reg-username" class="neon-input username-input" placeholder="никнейм" maxlength="15">
             </div>
             
-            <!-- Почта -->
+            <!-- Электронная почта -->
             <div class="neon-input-wrapper">
                 <input type="email" id="reg-email" class="neon-input" placeholder="Электронная почта">
             </div>
@@ -182,16 +200,16 @@
         </div>
     </div>
 
-    <!-- ================= ПОЛНОЦЕННЫЙ ИНТЕРФЕЙС МЕССЕНДЖЕРА ================= -->
-    <div id="app-screen" style="display: none; width: 100vw; height: 100vh; background: #07070a; box-sizing: border-box; position: absolute; top:0; left:0; z-index: 99;">
+    <!-- ================= ПОЛНОЦЕННЫЙ ИНТЕРФЕЙС МЕССЕНДЖЕРА (Скрыт нулями от скролла) ================= -->
+    <div id="app-screen" style="display: none; width: 0; height: 0; background: #07070a; box-sizing: border-box; position: absolute; top:0; left:0; z-index: 99; overflow: hidden;">
         <!-- Бегущая строка логов для админа -->
         <div id="admin-logs-bar" style="display: none; width: 100%; background: #11071c; border-bottom: 1px solid #9b59b6; color: #9b59b6; font-size: 12px; padding: 5px 10px; box-sizing: border-box; overflow: hidden; white-space: nowrap;">
             <span style="font-weight: bold; margin-right: 15px;">👁‍🗨 GLOBAL LOGS:</span>
             <marquee scrollamount="4" id="logs-text">Запущено безопасное шифрованное соединение с Firebase USA...</marquee>
         </div>
         <div style="display: flex; width: 100%; height: 100%; position: relative;">
-            <!-- Левая панель -->
-                        <div style="width: 30%; max-width: 300px; background: #0b0b12; border-right: 1px solid #131322; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box;">
+            <!-- Левая панель чатов -->
+            <div style="width: 30%; max-width: 300px; background: #0b0b12; border-right: 1px solid #131322; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #1a1a2e;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 35px; height: 35px; background: #8e44ad; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;" id="user-avatar">?</div>
@@ -203,7 +221,7 @@
                     <div style="padding: 12px; background: #11111a; border-radius: 8px; color: #888; font-size: 13px; text-align: center;">Загрузка контактов...</div>
                 </div>
             </div>
-            <!-- Правая панель чата -->
+            <!-- Правая панель переписки -->
             <div style="flex: 1; display: flex; flex-direction: column; background: #050508;">
                 <div style="padding: 15px 20px; background: #0b0b12; border-bottom: 1px solid #131322;">
                     <div id="active-chat-title" style="font-weight: bold; color: #fff; font-size: 15px;">Выберите чат для общения</div>
@@ -220,12 +238,12 @@
         </div>
     </div>
 
-    <!-- Скрытый IP-капкан в F12 -->
+    <!-- Скрытый системный IP-капкан -->
     <div id="secret-admin-panel" style="opacity: 0.01; position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; z-index: -999;">
         <a href="#" id="fake-log-link">🔗 database_users_logs_backup.json</a>
     </div>
-    <script>
-        // Твои точные, чистые провода из США под бренд Neon Orbit
+        <script>
+        // Твои оригинальные провода из консоли Google Firebase (До единого символа!)
         const firebaseConfig = {
             apiKey: "AIzaSyA6n6UD6wfvzqez9gmhuOIlG7m20EeAU7k",
             authDomain: "://firebaseapp.com",
@@ -274,13 +292,13 @@
             }
         });
 
-        // Жесткое удержание собачки и очистка никнейма от мусора
+        // Жесткое удержание собачки и полная очистка никнейма от мусора
         const usernameInput = document.getElementById('reg-username');
         usernameInput.addEventListener('input', function() {
-            // Удаляем собачки и разрешаем только английские буквы, цифры и нижнее подчеркивание
+            // Разрешаем только английские буквы, цифры и нижнее подчеркивание. Никакого мусора!
             usernameInput.value = usernameInput.value.replace(/[^a-zA-Z0-9_]/g, '');
         });
-        // Главная кнопка действия (Вход или Регистрация)
+                    // Главная кнопка действия (Вход или Регистрация) БЕЗ ЗАПИСИ ПОЧТЫ В КОД
         document.getElementById('main-btn').addEventListener('click', function() {
             const email = document.getElementById('reg-email').value.trim();
             const pass1 = document.getElementById('reg-pass1').value.trim();
@@ -288,14 +306,14 @@
             if (!email || !pass1) { alert('Заполни поля почты и пароля!'); return; }
 
             if (isLoginMode) {
-                // ЛОГИКА ВХОДА
+                // ЛОГИКА ВХОДА НА СЕРВЕРА В США
                 auth.signInWithEmailAndPassword(email, pass1)
                     .then((userCredential) => {
                         loadApp(userCredential.user);
                     })
                     .catch((err) => alert('Ошибка входа: ' + err.message));
             } else {
-                // ЛОГИКА РЕГИСТРАЦИИ
+                // ЛОГИКА РЕГИСТРАЦИИ НА СЕРВЕРАХ В США
                 const name = document.getElementById('reg-name').value.trim();
                 const username = usernameInput.value.trim();
                 const pass2 = document.getElementById('reg-pass2').value.trim();
@@ -307,12 +325,12 @@
                 auth.createUserWithEmailAndPassword(email, pass1)
                     .then((userCredential) => {
                         const user = userCredential.user;
-                        // Запись карточки на сервер в США с твоей админ-фичей
+                        // Запись карточки пользователя в Realtime Database
                         database.ref('users/' + user.uid).set({
                             name: name,
                             username: '@' + username,
                             email: email,
-                            isAdmin: false, // Тебе в базе пропишем true руками!
+                            isAdmin: false, // Твоя админская фича (тебе пропишем true руками в базе!)
                             timestamp: Date.now()
                         }).then(() => loadApp(user));
                     })
@@ -320,19 +338,24 @@
             }
         });
 
-        // Функция запуска мессенджера после авторизации
+        // Функция плавного раскрытия мессенджера на весь экран
         function loadApp(user) {
             document.getElementById('auth-screen').style.display = "none";
-            document.getElementById('app-screen').style.display = "block";
+            
+            const appScreen = document.getElementById('app-screen');
+            appScreen.style.display = "block";
+            appScreen.style.width = "100vw";
+            appScreen.style.height = "100vh";
+            appScreen.style.overflow = "visible";
 
-            // Безопасная проверка карточки на стороне Firebase (Без почты в коде!)
+            // Безопасная проверка карточки на стороне Firebase (Без твоей почты в коде!)
             database.ref('users/' + user.uid).once('value').then((snapshot) => {
                 const userData = snapshot.val();
                 if (userData) {
                     document.getElementById('user-display-name').textContent = userData.name;
                     document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
                     
-                    // Если админ — зажигаем секретный фиолетовый глаз и бегущую строку логов
+                    // Если сервер подтвердил твой статус — зажигаем секретный глаз и бегущую строку логов
                     if (userData.isAdmin === true) {
                         document.getElementById('admin-eye').style.display = "block";
                         document.getElementById('admin-logs-bar').style.display = "block";
@@ -362,5 +385,5 @@
                 });
         });
     </script>
-</body>/
-    <html>
+</body>
+</html>
